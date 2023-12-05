@@ -1,23 +1,27 @@
 module Day1 where
 
+import Data.Bool (bool)
 import Data.Char (isDigit)
-import Data.Maybe (isNothing)
+import Data.Maybe (fromJust, isNothing)
 import System.Environment (getArgs)
 
 -- Part 1
 example1 :: String
 example1 = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet"
 
-helper :: String -> Int
-helper x =
+helper1 :: String -> Int
+helper1 x =
     let h = head x
         l = last x
      in read (h : [l])
 
-day1 :: String -> Int
-day1 = sum . map (helper . filter isDigit) . lines
+part1 :: String -> Int
+part1 = sum . map (helper1 . filter isDigit) . lines
 
 -- Part 2
+example2 :: String
+example2 = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen"
+
 numberMap :: [(String, Int)]
 numberMap =
     [ ("one", 1)
@@ -32,29 +36,34 @@ numberMap =
     , ("zero", 0)
     ]
 
-helper1 :: String -> Maybe Int
-helper1 [] = Nothing
-helper1 a@(x : xs)
-    | x == 'o' = lookup (take 3 a) numberMap
+helper2 :: String -> String
+helper2 [] = []
+helper2 a@(x : xs)
+    | isDigit x = x : helper2 xs
+    | x == 'o' = maybe "" show (lookup (take 3 a) numberMap) ++ helper2 xs
     | x == 't' =
         case lookup (take 3 a) numberMap of
-            Nothing -> lookup (take 5 a) numberMap
-            Just x -> Just x
-    | x == 'f' = if isNothing (lookup (take 4 a) numberMap) then helper1 xs else lookup (take 4 a) numberMap
+            Nothing -> maybe "" show (lookup (take 5 a) numberMap) ++ helper2 xs
+            Just x -> show x ++ helper2 xs
+    | x == 'f' =
+        case lookup (take 4 a) numberMap of
+            Nothing -> helper2 xs
+            Just x -> show x ++ helper2 xs
     | x == 's' =
         case lookup (take 3 a) numberMap of
-            Nothing -> lookup (take 5 a) numberMap
-            Just x -> Just x
-    | x == 'e' = lookup (take 5 a) numberMap
-    | x == 'n' = lookup (take 4 a) numberMap
-    | otherwise = helper1 xs
+            Nothing -> maybe "" show (lookup (take 5 a) numberMap) ++ helper2 xs
+            Just x -> show x ++ helper2 xs
+    | x == 'e' = maybe "" show (lookup (take 5 a) numberMap) ++ helper2 xs
+    | x == 'n' = maybe "" show (lookup (take 4 a) numberMap) ++ helper2 xs
+    | x == 'z' = maybe "" show (lookup (take 4 a) numberMap) ++ helper2 xs
+    | otherwise = helper2 xs
 
-example2 :: String
-example2 = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen"
+part2 :: String -> Int
+part2 = sum . map (helper1 . helper2) . lines
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-        [f] -> readFile f >>= print . day1
+        [f] -> readFile f >>= print . part2
         _ -> error "Just 1 file"
