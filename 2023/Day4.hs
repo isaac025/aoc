@@ -39,7 +39,7 @@ updateLs (x : xs) l
     | otherwise =
         let v = head x
             ln = length x
-         in replicate (l+ln) v : updateLs xs l
+         in replicate (l + ln) v : updateLs xs l
 
 part2 :: IO ()
 part2 = getArgs >>= readFile . head >>= print . sum . help2 . map (singleton . lengthWinNums) . lines
